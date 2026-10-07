@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareConnect AI - Modern Medical Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-light: #f4f7fe;
+            --sidebar-bg: #0f172a;
+            --card-bg: #ffffff;
+            --border-light: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --primary-blue: #0284c7;
+            --emerald: #10b981;
+            --whatsapp-green: #25d366;
+            --red: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* 1. App Splash Screen Logo & Branding Image */
+        #splashScreen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; transition: opacity 0.8s ease;
+        }
+
+        .splash-card {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .splash-hero-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffffff;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: pulseHero 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulseHero {
+            0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { transform: scale(1.04); box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+            100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        /* 2. Login Page */
+        #loginScreen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-light); display: flex; align-items: center; justify-content: center; z-index: 8888;
+        }
+
+        .login-card {
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            border-radius: 24px; padding: 40px; width: 100%; max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 3. Main Application Dashboard */
+        .sidebar {
+            width: 250px; height: 100vh; position: fixed; top: 0; left: 0;
+            background: var(--sidebar-bg); border-right: 1px solid var(--border-light); padding: 20px 10px; z-index: 1000;
+        }
+
+        .main-content { margin-left: 250px; padding: 30px; min-height: 100vh; }
+
+        .nav-link-custom {
+            color: #94a3b8; padding: 12px 16px; border-radius: 12px;
+            display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; margin-bottom: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link-custom:hover, .nav-link-custom.active { background: rgba(2, 132, 199, 0.15); color: #38bdf8; }
+
+        .card-custom {
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            border-radius: 20px; padding: 22px; margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+        }
+
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .vital-num { font-size: 2.2rem; font-weight: 800; color: var(--text-dark); }
+        .sos-btn { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 50px; padding: 14px 28px; font-weight: 800; width: 100%; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3); }
+        .btn-whatsapp { background-color: var(--whatsapp-green); color: white; font-weight: 700; border-radius: 50px; border: none; padding: 10px 20px; }
+        .avatar-img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-blue); }
+        
+        .heart-icon-beating { font-size: 1.8rem; color: var(--red); animation: heartBeat 0.8s infinite alternate ease-in-out; }
+        @keyframes heartBeat { 0% { transform: scale(1); } 100% { transform: scale(1.25); } }
+
+        .ecg-line {
+            stroke: var(--red); stroke-width: 2; fill: none; stroke-dasharray: 1000; stroke-dashoffset: 1000;
+            animation: dash 2s linear infinite;
+        }
+        @keyframes dash { to { stroke-dashoffset: 0; } }
+
+        video#cameraFeed {
+            width: 100%; height: 220px; background: #000; border-radius: 12px; object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. SPLASH SCREEN WITH BRANDING IMAGE -->
+    <div id="splashScreen">
+        <div class="splash-card">
+            <!-- Medical Senior Care Hero Image -->
+            <img src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400&auto=format&fit=crop&q=80" alt="Senior Care" class="splash-hero-img mb-3">
+            <h1 class="fw-bold text-light mt-2 mb-1">CareConnect AI</h1>
+            <p class="text-info small fw-bold text-uppercase tracking-wider mb-3">Elderly Health & Safety Platform</p>
+            <div class="spinner-border text-light spinner-border-sm" role="status"></div>
+        </div>
+    </div>
+
+    <!-- 2. LOGIN PAGE -->
+    <div id="loginScreen" style="display: none;">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <div class="d-inline-block p-3 bg-primary bg-opacity-10 rounded-circle mb-2">
+                    <i class="bi bi-shield-heart-fill fs-2 text-primary"></i>
+                </div>
+                <h3 class="fw-bold text-dark mt-1 mb-0">Caregiver Portal</h3>
+                <small class="text-muted">Sign in to access senior portal</small>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person"></i></span>
+                        <input type="text" id="loginUsername" value="admin" class="form-control bg-light border-start-0" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+                        <input type="password" id="loginPassword" value="1234" class="form-control bg-light border-start-0" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill py-2 mt-2">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Dashboard
+                </button>
+            </form>
+            <small class="text-muted d-block text-center mt-3" style="font-size: 0.75rem;">Credentials: <strong>admin</strong> / <strong>1234</strong></small>
+        </div>
+    </div>
+
+    <!-- 3. MAIN APPLICATION INTERFACE -->
+    <div id="appContainer" style="display: none;">
+        
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="d-flex align-items-center gap-2 mb-4 px-3">
+                <i class="bi bi-shield-heart-fill fs-3 text-info"></i>
+                <span class="fs-5 fw-bold text-light">CareConnect</span>
+            </div>
+
+            <nav>
+                <a href="#" class="nav-link-custom active" onclick="showPage('dashboard', this)"><i class="bi bi-grid-1x2-fill"></i> Live Dashboard</a>
+                <a href="#" class="nav-link-custom" onclick="showPage('medical', this)"><i class="bi bi-file-earmark-medical-fill"></i> Medical Records</a>
+                <a href="#" class="nav-link-custom" onclick="showPage('wellness', this)"><i class="bi bi-droplet-fill"></i> Hydration Care</a>
+                <a href="#" class="nav-link-custom" onclick="showPage('dispatch', this)"><i class="bi bi-hospital"></i> District Dispatch</a>
+                <a href="#" class="nav-link-custom" onclick="showPage('medications', this)"><i class="bi bi-capsule"></i> Prescription Inventory</a>
+                <a href="#" class="nav-link-custom" onclick="showPage('logs', this)"><i class="bi bi-bell-fill"></i> Audit Logs</a>
+                <a href="#" class="nav-link-custom text-danger mt-3" onclick="handleLogout()"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            </nav>
+
+            <div style="position: absolute; bottom: 20px; width: 210px; padding: 0 10px;">
+                <button class="sos-btn" onclick="triggerSOS()"><i class="bi bi-exclamation-circle-fill me-1"></i> EMERGENCY SOS</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+
+            <!-- Critical Emergency Alert Banner -->
+            <div id="alertBanner" class="alert alert-danger bg-danger bg-opacity-10 border-2 border-danger text-danger rounded-4 p-3 mb-4" style="display:none;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="fw-bold mb-1 text-danger"><i class="bi bi-megaphone-fill me-2"></i>CRITICAL ALARM BROADCAST ACTIVE</h6>
+                        <p class="mb-0 small" id="alertBannerText">System broadcasting voice alert...</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-whatsapp btn-sm" onclick="sendWhatsAppAlert()"><i class="bi bi-whatsapp me-1"></i> Dispatch WhatsApp</button>
+                        <button class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="silenceAlert()">Silence</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 1: LIVE DASHBOARD -->
+            <div id="page-dashboard" class="page-section active">
+                <div class="card-custom border-0 bg-white shadow-sm p-3 mb-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <img id="dashAvatar" src="" class="avatar-img">
+                        <div>
+                            <h4 class="fw-bold mb-0 text-dark" id="dashName">Shaikh Nazim Nazir Ahmed</h4>
+                            <small class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Garud Chowk, Latur | <span id="gpsDisplay" class="text-primary fw-semibold">Acquiring GPS...</span></small>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="accelBtn" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold" onclick="enableHardwareMotionSensor()">
+                            <i class="bi bi-phone-vibrate me-1"></i> Enable Motion Fall AI
+                        </button>
+                        <button id="anomalyBtn" class="btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold" onclick="toggleAnomaly()">
+                            <i class="bi bi-activity me-1"></i> Simulate Anomaly
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="toggleVoiceSentinel()" id="micBtn">
+                            <i class="bi bi-mic-fill me-1"></i> Enable Mic
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Real-Time Vitals -->
+                    <div class="col-md-4">
+                        <div class="card-custom text-center">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-bold">HEART RATE</small>
+                                <i id="heartIcon" class="bi bi-heart-fill heart-icon-beating"></i>
+                            </div>
+                            <div class="vital-num text-danger" id="valHeartRate">--</div>
+                            <small class="text-muted">BPM (Optical PPG Sensor)</small>
+                            <div class="mt-2">
+                                <svg width="100%" height="25" viewBox="0 0 200 40">
+                                    <path class="ecg-line" d="M 0 20 L 40 20 L 50 10 L 60 30 L 70 5 L 80 35 L 90 20 L 200 20"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card-custom text-center">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-bold">BLOOD PRESSURE</small>
+                                <i class="bi bi-activity text-primary fs-4"></i>
+                            </div>
+                            <div class="vital-num text-primary" id="valBP">--</div>
+                            <small class="text-muted">mmHg</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card-custom text-center">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-bold">OXYGEN SATURATION</small>
+                                <i class="bi bi-droplet-fill text-success fs-4"></i>
+                            </div>
+                            <div class="vital-num text-success" id="valSpo2">--</div>
+                            <small class="text-muted">% SpO2</small>
+                        </div>
+                    </div>
+
+                    <!-- AI Inactivity Sentinel -->
+                    <div class="col-12">
+                        <div class="card-custom border-start border-4 border-info d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-primary fw-bold mb-1"><i class="bi bi-cpu-fill me-2"></i>AI Inactivity & Anomaly Engine</h6>
+                                <p id="aiStatusText" class="text-muted small mb-0">Analyzing continuous movement patterns...</p>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="logMovement()">Reset Activity Timer</button>
+                        </div>
+                    </div>
+
+                    <!-- Offline Failover Section -->
+                    <div class="col-12">
+                        <div class="card-custom border-start border-4 border-warning">
+                            <h6 class="fw-bold text-warning mb-2"><i class="bi bi-reception-4 me-2"></i>Cellular Offline Failover Safeguard</h6>
+                            <p class="text-muted small mb-3">If internet fails, these direct GSM triggers dispatch SMS and voice calls via mobile carrier networks:</p>
+                            <div class="d-flex gap-2">
+                                <a href="sms:919876543210?body=EMERGENCY!%20Shaikh%20Nazim%20needs%20immediate%20help%20at%20Garud%20Chowk,Latur." class="btn btn-warning btn-sm fw-bold rounded-pill text-dark">
+                                    <i class="bi bi-chat-dots-fill me-1"></i> Offline GSM SMS Alert
+                                </a>
+                                <a href="tel:919876543210" class="btn btn-outline-warning btn-sm fw-bold rounded-pill">
+                                    <i class="bi bi-telephone-fill me-1"></i> Direct GSM Emergency Call
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Diagnostic Controls -->
+                    <div class="col-12">
+                        <div class="card-custom">
+                            <h6 class="fw-bold mb-3 text-secondary"><i class="bi bi-lightning-charge-fill me-2"></i>Interactive Sensor Diagnostics</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <button class="btn btn-outline-warning w-100 fw-bold rounded-pill py-2" onclick="triggerFall()">Simulate Fall Impact</button>
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-outline-danger w-100 fw-bold rounded-pill py-2" onclick="triggerSOS()">Trigger SOS Alarm</button>
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-whatsapp w-100 fw-bold py-2" onclick="sendWhatsAppAlert()">Dispatch WhatsApp</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 2: MEDICAL RECORDS -->
+            <div id="page-medical" class="page-section">
+                <h3 class="fw-bold mb-3">Patient Medical Profile & History</h3>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card-custom">
+                            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard2-pulse me-2"></i>Chronic Conditions</h6>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-transparent text-dark border-light"><i class="bi bi-check-circle-fill text-warning me-2"></i>Hypertension (High Blood Pressure)</li>
+                                <li class="list-group-item bg-transparent text-dark border-light"><i class="bi bi-check-circle-fill text-warning me-2"></i>Type 2 Diabetes Mellitus</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card-custom">
+                            <h6 class="fw-bold text-danger mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>Known Allergies</h6>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-transparent text-dark border-light"><i class="bi bi-x-circle-fill text-danger me-2"></i>Penicillin Group Antibiotics</li>
+                                <li class="list-group-item bg-transparent text-dark border-light"><i class="bi bi-x-circle-fill text-danger me-2"></i>Sulfa Drugs</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card-custom">
+                            <h6 class="fw-bold text-success mb-2"><i class="bi bi-geo-alt-fill me-2"></i>Live Device Hardware GPS</h6>
+                            <p class="text-muted small mb-1"><strong>Address:</strong> Garud Chowk, Latur, Maharashtra</p>
+                            <p class="text-muted small mb-0"><strong>Device Coordinates:</strong> <span id="gpsCoordsText" class="text-primary fw-bold">Acquiring GPS...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 3: HYDRATION CARE -->
+            <div id="page-wellness" class="page-section">
+                <h3 class="fw-bold mb-3">Preventative Health & Hydration</h3>
+                <div class="card-custom">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold text-primary mb-1"><i class="bi bi-droplet-fill me-2"></i>Daily Hydration Goal</h5>
+                            <p class="text-muted small mb-0">Dehydration causes dizziness & fall risks in elderly citizens.</p>
+                        </div>
+                        <span class="badge bg-success fs-6" id="hydrationBadge">4/8 Glasses</span>
+                    </div>
+                    <div class="progress mb-3 bg-light" style="height: 15px;">
+                        <div id="waterProgressBar" class="progress-bar bg-info" style="width: 50%;"></div>
+                    </div>
+                    <button class="btn btn-primary fw-bold rounded-pill" onclick="addWaterGlass()">
+                        <i class="bi bi-plus-lg me-1"></i> Drink 1 Glass of Water
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAGE 4: LOCAL DISPATCH -->
+            <div id="page-dispatch" class="page-section">
+                <h3 class="fw-bold mb-3">District Emergency Services Routing</h3>
+                <div class="card-custom border-start border-4 border-warning">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold text-warning mb-1">Civil Hospital Emergency Unit - Latur</h5>
+                            <p class="text-muted small mb-0">Distance: 1.8 km | Est. Response Time: 6 Mins</p>
+                        </div>
+                        <button class="btn btn-outline-warning rounded-pill px-3" onclick="alert('GPS Route Transmitted!')">Dispatch GPS Route</button>
+                    </div>
+                    <hr class="border-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="fw-bold text-primary mb-1">District Police Control Room</h5>
+                            <p class="text-muted small mb-0">Distance: 1.1 km | Helpline: 112</p>
+                        </div>
+                        <button class="btn btn-outline-primary rounded-pill px-3" onclick="alert('Control Room Alerted!')">Contact Helpline</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 5: MEDICINES -->
+            <div id="page-medications" class="page-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="fw-bold mb-0">Prescription Inventory</h3>
+                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="openScannerModal()">
+                        <i class="bi bi-camera-fill me-1"></i> Scan Prescription OCR
+                    </button>
+                </div>
+                <div class="card-custom">
+                    <ul class="list-group list-group-flush" id="medListContainer"></ul>
+                </div>
+            </div>
+
+            <!-- PAGE 6: LOGS -->
+            <div id="page-logs" class="page-section">
+                <h3 class="fw-bold mb-3">Caregiver Audit Logs</h3>
+                <div class="card-custom p-0">
+                    <ul class="list-group list-group-flush" id="logListContainer"></ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PRESCRIPTION SCANNER MODAL WITH WEBCAM FEED -->
+    <div class="modal fade" id="scannerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-white border-0 shadow">
+                <div class="modal-header border-light">
+                    <h5 class="modal-title fw-bold text-primary"><i class="bi bi-camera me-2"></i>Prescription OCR Camera Scanner</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="stopCameraStream()"></button>
+                </div>
+                <div class="modal-body text-center p-3">
+                    <video id="cameraFeed" autoplay playsinline class="mb-3"></video>
+                    <button class="btn btn-primary fw-bold rounded-pill px-4" onclick="processOCRScan()">
+                        <i class="bi bi-magic me-1"></i> Capture Snapshot & Extract
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let scannerModalObj;
+        let videoStream = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            scannerModalObj = new bootstrap.Modal(document.getElementById('scannerModal'));
+            acquireRealGPS();
+
+            setTimeout(() => {
+                document.getElementById('splashScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('splashScreen').style.display = 'none';
+                    document.getElementById('loginScreen').style.display = 'flex';
+                }, 800);
+            }, 2200);
+        });
+
+        function acquireRealGPS() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    fetch('/api/update_gps', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lat, lng })
+                    }).then(() => {
+                        const coordsStr = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E`;
+                        document.getElementById('gpsDisplay').innerText = coordsStr;
+                        document.getElementById('gpsCoordsText').innerText = coordsStr;
+                    });
+                }, err => {
+                    console.log("GPS access fallback.");
+                });
+            }
+        }
+
+        function enableHardwareMotionSensor() {
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission().then(response => {
+                    if (response === 'granted') {
+                        attachAccelerometerListener();
+                    }
+                });
+            } else {
+                attachAccelerometerListener();
+            }
+        }
+
+        function attachAccelerometerListener() {
+            window.addEventListener('devicemotion', event => {
+                const acc = event.accelerationIncludingGravity;
+                if (acc) {
+                    const totalG = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+                    if (totalG > 25) {
+                        triggerFall();
+                    }
+                }
+            });
+            const btn = document.getElementById('accelBtn');
+            btn.className = "btn btn-success btn-sm rounded-pill px-3 fw-bold";
+            btn.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Motion Sensor Active`;
+            alert("Hardware Accelerometer connected!");
+        }
+
+        function openScannerModal() {
+            scannerModalObj.show();
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(stream => {
+                        videoStream = stream;
+                        document.getElementById('cameraFeed').srcObject = stream;
+                    })
+                    .catch(err => {
+                        console.log("Camera blocked.");
+                    });
+            }
+        }
+
+        function stopCameraStream() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+        }
+
+        function processOCRScan() {
+            stopCameraStream();
+            fetch('/api/add_prescription_ocr', { method: 'POST' })
+                .then(res => res.json())
+                .then(() => {
+                    scannerModalObj.hide();
+                    alert("Prescription Scanned & Extracted!");
+                    updateDashboard();
+                });
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value;
+            const p = document.getElementById('loginPassword').value;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('appContainer').style.display = 'block';
+                    updateDashboard();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function handleLogout() {
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        }
+
+        function showPage(pageId, element) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            if (element) element.classList.add('active');
+        }
+
+        function speakAlert(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.rate = 1.0;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        let recognition;
+        function toggleVoiceSentinel() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert("Speech recognition requires Chrome browser!");
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+
+            recognition.onstart = function() {
+                const btn = document.getElementById('micBtn');
+                btn.className = "btn btn-danger btn-sm rounded-pill px-3 fw-bold";
+                btn.innerText = "Listening...";
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                if (transcript.includes('help') || transcript.includes('bachao') || transcript.includes('madat') || transcript.includes('emergency')) {
+                    triggerSOS();
+                    speakAlert("Distress keyword detected! Activating emergency SOS now.");
+                }
+            };
+            recognition.start();
+        }
+
+        function toggleAnomaly() { fetch('/api/toggle_anomaly', { method: 'POST' }).then(() => updateDashboard()); }
+        function addWaterGlass() { fetch('/api/log_water', { method: 'POST' }).then(() => updateDashboard()); }
+
+        function updateDashboard() {
+            fetch('/api/status')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('dashAvatar').src = data.profile.profile_img;
+                    document.getElementById('dashName').innerText = data.profile.name;
+
+                    document.getElementById('valHeartRate').innerText = data.vitals.heart_rate;
+                    document.getElementById('valBP').innerText = data.vitals.bp;
+                    document.getElementById('valSpo2').innerText = data.vitals.spo2;
+
+                    document.getElementById('aiStatusText').innerText = data.ai_monitoring.message;
+
+                    const anomalyBtn = document.getElementById('anomalyBtn');
+                    if (data.vitals.anomaly_mode) {
+                        anomalyBtn.className = "btn btn-danger btn-sm rounded-pill px-3 fw-bold";
+                        anomalyBtn.innerText = "Cardiac Anomaly Active!";
+                    } else {
+                        anomalyBtn.className = "btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold";
+                        anomalyBtn.innerText = "Simulate Anomaly";
+                    }
+
+                    const waterCount = data.wellness.water_glasses;
+                    document.getElementById('hydrationBadge').innerText = `${waterCount}/8 Glasses`;
+                    document.getElementById('waterProgressBar').style.width = ((waterCount / 8) * 100) + '%';
+
+                    const medList = document.getElementById('medListContainer');
+                    medList.innerHTML = '';
+                    data.medications.forEach(med => {
+                        const lowStock = med.stock <= 3;
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item bg-transparent text-dark border-light d-flex justify-content-between align-items-center py-3';
+                        li.innerHTML = `
+                            <div>
+                                <span class="${med.taken ? 'text-decoration-line-through text-muted' : 'fw-bold'}">${med.name}</span>
+                                <small class="text-muted ms-2"><i class="bi bi-clock me-1"></i>${med.time}</small>
+                                <div class="mt-1"><span class="badge ${lowStock ? 'bg-danger' : 'bg-secondary'}">Stock: ${med.stock} pills</span></div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                ${lowStock ? `<a href="https://wa.me/919876543210?text=Refill%20order%20for%20${med.name}" target="_blank" class="btn btn-sm btn-outline-warning rounded-pill">Reorder</a>` : ''}
+                                <button class="btn btn-sm ${med.taken ? 'btn-success' : 'btn-outline-primary'} rounded-pill px-3" onclick="toggleMed(${med.id})">${med.taken ? 'Taken' : 'Mark Taken'}</button>
+                            </div>
+                        `;
+                        medList.appendChild(li);
+                    });
+
+                    const logList = document.getElementById('logListContainer');
+                    if (data.alerts.length > 0) {
+                        logList.innerHTML = '';
+                        data.alerts.forEach(al => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item bg-danger bg-opacity-10 text-danger border-light py-3';
+                            li.innerHTML = `<strong>${al.type}</strong> - ${al.detail} <span class="text-muted float-end">${al.timestamp}</span>`;
+                            logList.appendChild(li);
+                        });
+                    }
+                });
+        }
+
+        function triggerSOS() {
+            fetch('/api/trigger_sos', { method: 'POST' }).then(() => {
+                triggerAlertUI("EMERGENCY SOS: Panic signal transmitted to caregiver!");
+                updateDashboard();
+            });
+        }
+
+        function triggerFall() {
+            fetch('/api/trigger_fall', { method: 'POST' }).then(() => {
+                triggerAlertUI("FALL DETECTED: Impact velocity logged!");
+                updateDashboard();
+            });
+        }
+
+        function sendWhatsAppAlert() {
+            fetch('/api/get_whatsapp_link').then(res => res.json()).then(data => { window.open(data.whatsapp_url, '_blank'); });
+        }
+
+        function triggerAlertUI(msg) {
+            document.getElementById('alertBanner').style.display = 'block';
+            document.getElementById('alertBannerText').innerText = msg;
+            speakAlert(msg);
+        }
+
+        function silenceAlert() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            document.getElementById('alertBanner').style.display = 'none';
+        }
+
+        function logMovement() { fetch('/api/simulate_activity', { method: 'POST' }).then(() => updateDashboard()); }
+        function toggleMed(id) { fetch('/api/toggle_medication/' + id, { method: 'POST' }).then(() => updateDashboard()); }
+
+        setInterval(updateDashboard, 2000);
+    </script>
+</body>
+</html>
